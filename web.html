@@ -428,37 +428,28 @@
         return;
       }
 
-// Rate limit check
-let lastSent = localStorage.getItem("lastWebhookSend");
 
-if (lastSent) {
-  const diff = Date.now() - parseInt(lastSent, 10);
-  if (diff < 24 * 60 * 60 * 1000) {
-    showAlert("You may only send one request every 24 hours!");
-    return;
-  }
-}
 
-// Prepare embed payload with light red color
-const embedPayload = {
-  embeds: [
-    {
-      title: "New Request",
-      color: 0xFF6B6B, // Light red color
-      fields: [
-        { name: "Link to group/game", value: username, inline: true },
-        { name: "Request Type", value: selectedOption, inline: true },
-        { name: "Amount", value: number.toString(), inline: true },
-      ],
-      timestamp: new Date().toISOString(),
-      footer: {
-        text: "m's roblox tools",
-      },
-    }
-  ]
-};
+      // Prepare embed payload with light red color
+      const embedPayload = {
+        embeds: [
+          {
+            title: "New Request",
+            color: 0xFF6B6B, // Light red color
+            fields: [
+              { name: "Link to group/game", value: username, inline: true },
+              { name: "Request Type", value: selectedOption, inline: true },
+              { name: "Amount", value: number.toString(), inline: true },
+            ],
+            timestamp: new Date().toISOString(),
+            footer: {
+              text: "m's roblox tools",
+            },
+          }
+        ]
+      };
 
-try {
+      try {
   const res = await fetch("https://discord.com/api/webhooks/1386124747875553350/jKpqxAUhwnG5WkQZ_whRsfcFTUFj7uwRrQ9OPo71Ak2vEdpKznUpNfI6QxjvOMUZctbW", {
     method: "POST",
     headers: {
@@ -466,8 +457,8 @@ try {
     },
     body: JSON.stringify(embedPayload)
   });
+
   if (res.ok) {
-    localStorage.setItem("lastWebhookSend", Date.now().toString());
     showAlert("Sent!");
   } else {
     showAlert("Failed to send");
