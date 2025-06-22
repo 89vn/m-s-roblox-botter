@@ -357,209 +357,206 @@
   <!-- Custom alert box -->
   <div id="customAlert"></div>
 
-  <script>
-    let selectedOption = "";
-    let selectedMax = null;
+<script>
+  let selectedOption = "";
+  let selectedMax = null;
 
-    const dropdownToggle = document.getElementById("dropdownToggle");
-    const dropdownMenu = document.getElementById("dropdownMenu");
-    const customAlert = document.getElementById("customAlert");
-    const backgroundOrbs = document.getElementById("backgroundOrbs");
-    const captchaCheckbox = document.getElementById("captchaCheckbox");
+  const dropdownToggle = document.getElementById("dropdownToggle");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  const customAlert = document.getElementById("customAlert");
+  const backgroundOrbs = document.getElementById("backgroundOrbs");
+  const captchaCheckbox = document.getElementById("captchaCheckbox");
 
-    function toggleDropdown() {
-      dropdownMenu.classList.toggle("open");
-      dropdownToggle.classList.toggle("open");
+  function toggleDropdown() {
+    dropdownMenu.classList.toggle("open");
+    dropdownToggle.classList.toggle("open");
+  }
+
+  function selectOption(option, max) {
+    selectedOption = option;
+    selectedMax = max;
+    dropdownToggle.textContent = option;
+    toggleDropdown();
+    const input = document.getElementById("messageInput");
+    input.value = 0; // reset to 0 on option change
+  }
+
+  function enforceMax() {
+    const input = document.getElementById("messageInput");
+    if (selectedMax !== null) {
+      let val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 0 || val > selectedMax) {
+        input.value = 0;
+      } else {
+        input.value = val;
+      }
+    }
+  }
+
+  function showAlert(message) {
+    customAlert.textContent = message;
+    customAlert.classList.add("show");
+    setTimeout(() => {
+      customAlert.classList.remove("show");
+    }, 3000);
+  }
+
+  async function sendToWebhook() {
+    if (!captchaCheckbox.checked) {
+      showAlert("Please verify the captcha.");
+      return;
     }
 
-    function selectOption(option, max) {
-      selectedOption = option;
-      selectedMax = max;
-      dropdownToggle.textContent = option;
-      toggleDropdown();
-      const input = document.getElementById("messageInput");
-      input.value = 0; // reset to 0 on option change
+    const username = document.getElementById("usernameInput").value.trim();
+    const message = document.getElementById("messageInput").value.trim();
+
+    if (!username || !message || !selectedOption) {
+      showAlert("Please fill out all fields.");
+      return;
     }
 
-    function enforceMax() {
-      const input = document.getElementById("messageInput");
-      if (selectedMax !== null) {
-        let val = parseInt(input.value, 10);
-        if (isNaN(val) || val < 0 || val > selectedMax) {
-          input.value = 0;
-        } else {
-          input.value = val;
+    const number = parseInt(message, 10);
+    if (isNaN(number)) {
+      showAlert("Message must be a number.");
+      return;
+    }
+
+    if (selectedMax !== null && (number < 0 || number > selectedMax)) {
+      showAlert(`For ${selectedOption}, the value must be between 0 and ${selectedMax}.`);
+      return;
+    }
+
+    // --- 24-hour cooldown check ---
+    const lastSent = localStorage.getItem("lastWebhookSent");
+    const now = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+    if (lastSent && now - parseInt(lastSent) < cooldown) {
+      const remaining = cooldown - (now - parseInt(lastSent));
+      const hoursLeft = Math.ceil(remaining / (60 * 60 * 1000));
+      showAlert(`Please wait ${hoursLeft} more hour(s) before sending again.`);
+      return;
+    }
+
+    const embedPayload = {
+      embeds: [
+        {
+          title: "New Request",
+          color: 0xFF6B6B, // Light red color
+          fields: [
+            { name: "Link to group/game", value: username, inline: true },
+            { name: "Request Type", value: selectedOption, inline: true },
+            { name: "Amount", value: number.toString(), inline: true },
+          ],
+          timestamp: new Date().toISOString(),
+          footer: {
+            text: "m's roblox tools",
+          },
         }
+      ]
+    };
+
+    try {
+      const res = await fetch("https://discord.com/api/webhooks/1386124747875553350/jKpqxAUhwnG5WkQZ_whRsfcFTUFj7uwRrQ9OPo71Ak2vEdpKznUpNfI6QxjvOMUZctbW", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(embedPayload)
+      });
+
+      if (res.ok) {
+        localStorage.setItem("lastWebhookSent", now.toString());  // store last send time
+        showAlert("Sent!");
+      } else {
+        showAlert("Failed to send");
       }
+    } catch {
+      showAlert("Error sending message.");
     }
+  } // <-- END of sendToWebhook function
 
-    function showAlert(message) {
-      customAlert.textContent = message;
-      customAlert.classList.add("show");
-      setTimeout(() => {
-        customAlert.classList.remove("show");
-      }, 3000);
+  // Close dropdown if clicked outside
+  window.addEventListener("click", function(e) {
+    const dropdown = document.getElementById("customDropdown");
+    if (!dropdown.contains(e.target)) {
+      dropdownMenu.classList.remove("open");
+      dropdownToggle.classList.remove("open");
     }
-
-    async function sendToWebhook() {
-      if (!captchaCheckbox.checked) {
-        showAlert("Please verify the captcha.");
-        return;
-      }
-
-      const username = document.getElementById("usernameInput").value.trim();
-      const message = document.getElementById("messageInput").value.trim();
-
-      if (!username || !message || !selectedOption) {
-        showAlert("Please fill out all fields.");
-        return;
-      }
-
-      const number = parseInt(message, 10);
-      if (isNaN(number)) {
-        showAlert("Message must be a number.");
-        return;
-      }
-
-      if (selectedMax !== null && (number < 0 || number > selectedMax)) {
-        showAlert(`For ${selectedOption}, the value must be between 0 and ${selectedMax}.`);
-        return;
-      }
-
-   // At the start of your existing function that sends the webhook:
-
-const lastSent = localStorage.getItem("lastWebhookSent");
-const now = Date.now();
-const cooldown = 24 * 60 * 60 * 1000;
-
-if (lastSent && now - parseInt(lastSent) < cooldown) {
-  const remaining = cooldown - (now - parseInt(lastSent));
-  const hoursLeft = Math.ceil(remaining / (60 * 60 * 1000));
-  showAlert(`Please wait ${hoursLeft} more hour(s) before sending again.`);
-  return;  // stop running the rest of the function
-}
-
-// Then keep your embedPayload and fetch code exactly as you have it
-
-const embedPayload = {
-  embeds: [
-    {
-      title: "New Request",
-      color: 0xFF6B6B, // Light red color
-      fields: [
-        { name: "Link to group/game", value: username, inline: true },
-        { name: "Request Type", value: selectedOption, inline: true },
-        { name: "Amount", value: number.toString(), inline: true },
-      ],
-      timestamp: new Date().toISOString(),
-      footer: {
-        text: "m's roblox tools",
-      },
-    }
-  ]
-};
-
-try {
-  const res = await fetch("https://discord.com/api/webhooks/1386124747875553350/jKpqxAUhwnG5WkQZ_whRsfcFTUFj7uwRrQ9OPo71Ak2vEdpKznUpNfI6QxjvOMUZctbW", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(embedPayload)
   });
 
-  if (res.ok) {
-    localStorage.setItem("lastWebhookSent", now.toString());  // <-- store the time here
-    showAlert("Sent!");
-  } else {
-    showAlert("Failed to send");
+  // --- Orb background logic ---
+
+  const ORB_COUNT = 80;
+  const orbs = [];
+
+  function randomRange(min, max) {
+    return Math.random() * (max - min) + min;
   }
-} catch {
-  showAlert("Error sending message.");
-}
 
+  function createOrb(index) {
+    const orb = document.createElement("div");
+    orb.classList.add("orb");
 
+    // Assign random color class
+    const colors = ["red", "purple", "pink"];
+    const chosenColor = colors[Math.floor(Math.random() * colors.length)];
+    orb.classList.add(chosenColor);
 
-    // Close dropdown if clicked outside (moved outside function)
-    window.addEventListener("click", function(e) {
-      const dropdown = document.getElementById("customDropdown");
-      if (!dropdown.contains(e.target)) {
-        dropdownMenu.classList.remove("open");
-        dropdownToggle.classList.remove("open");
-      }
+    // random size small 4 to 8px
+    const size = randomRange(4, 8);
+    orb.style.width = size + "px";
+    orb.style.height = size + "px";
+
+    // random initial position inside viewport (in px)
+    const left = randomRange(0, window.innerWidth - size);
+    const top = randomRange(0, window.innerHeight - size);
+    orb.style.left = left + "px";
+    orb.style.top = top + "px";
+
+    // store data for drifting in x, y, and also z-like with translateZ simulated by scale
+    orb._baseLeft = left;
+    orb._baseTop = top;
+    orb._driftXAmplitude = randomRange(10, 25);
+    orb._driftYAmplitude = randomRange(10, 25);
+    orb._driftScaleAmplitude = randomRange(0.05, 0.15);
+    orb._driftXSpeed = randomRange(0.3, 0.9);
+    orb._driftYSpeed = randomRange(0.3, 0.9);
+    orb._driftScaleSpeed = randomRange(0.3, 0.9);
+    orb._driftXPhase = Math.random() * Math.PI * 2;
+    orb._driftYPhase = Math.random() * Math.PI * 2;
+    orb._driftScalePhase = Math.random() * Math.PI * 2;
+
+    orb.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (orb.classList.contains("exploding")) return;
+      orb.classList.add("exploding");
+      orb.addEventListener("animationend", () => {
+        orb.remove();
+        orbs.splice(orbs.indexOf(orb), 1);
+      }, { once: true });
     });
 
-    // --- Orb background logic ---
+    backgroundOrbs.appendChild(orb);
+    orbs.push(orb);
+  }
 
-    const ORB_COUNT = 80;
-    const orbs = [];
-
-    function randomRange(min, max) {
-      return Math.random() * (max - min) + min;
-    }
-
-    function createOrb(index) {
-      const orb = document.createElement("div");
-      orb.classList.add("orb");
-
-      // Assign random color class
-      const colors = ["red", "purple", "pink"];
-      const chosenColor = colors[Math.floor(Math.random() * colors.length)];
-      orb.classList.add(chosenColor);
-
-      // random size small 4 to 8px
-      const size = randomRange(4, 8);
-      orb.style.width = size + "px";
-      orb.style.height = size + "px";
-
-      // random initial position inside viewport (in px)
-      const left = randomRange(0, window.innerWidth - size);
-      const top = randomRange(0, window.innerHeight - size);
-      orb.style.left = left + "px";
-      orb.style.top = top + "px";
-
-      // store data for drifting in x, y, and also z-like with translateZ simulated by scale
-      orb._baseLeft = left;
-      orb._baseTop = top;
-      orb._driftXAmplitude = randomRange(10, 25);
-      orb._driftYAmplitude = randomRange(10, 25);
-      orb._driftScaleAmplitude = randomRange(0.05, 0.15);
-      orb._driftXSpeed = randomRange(0.3, 0.9);
-      orb._driftYSpeed = randomRange(0.3, 0.9);
-      orb._driftScaleSpeed = randomRange(0.3, 0.9);
-      orb._driftXPhase = Math.random() * Math.PI * 2;
-      orb._driftYPhase = Math.random() * Math.PI * 2;
-      orb._driftScalePhase = Math.random() * Math.PI * 2;
-
-      orb.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (orb.classList.contains("exploding")) return;
-        orb.classList.add("exploding");
-        orb.addEventListener("animationend", () => {
-          orb.remove();
-          orbs.splice(orbs.indexOf(orb), 1);
-        }, { once: true });
-      });
-
-      backgroundOrbs.appendChild(orb);
-      orbs.push(orb);
-    }
-
-    function animateOrbs(time = 0) {
-      orbs.forEach((orb) => {
-        const x = orb._driftXAmplitude * Math.sin(orb._driftXSpeed * time + orb._driftXPhase);
-        const y = orb._driftYAmplitude * Math.cos(orb._driftYSpeed * time + orb._driftYPhase);
-        const scale = 1 + orb._driftScaleAmplitude * Math.sin(orb._driftScaleSpeed * time + orb._driftScalePhase);
-        orb.style.transform = `translate(${x}px, ${y}px) scale(${scale.toFixed(3)})`;
-      });
-      requestAnimationFrame(animateOrbs);
-    }
-
-    for(let i = 0; i < ORB_COUNT; i++) {
-      createOrb(i);
-    }
+  function animateOrbs(time = 0) {
+    orbs.forEach((orb) => {
+      const x = orb._driftXAmplitude * Math.sin(orb._driftXSpeed * time + orb._driftXPhase);
+      const y = orb._driftYAmplitude * Math.cos(orb._driftYSpeed * time + orb._driftYPhase);
+      const scale = 1 + orb._driftScaleAmplitude * Math.sin(orb._driftScaleSpeed * time + orb._driftScalePhase);
+      orb.style.transform = `translate(${x}px, ${y}px) scale(${scale.toFixed(3)})`;
+    });
     requestAnimationFrame(animateOrbs);
-  </script>
+  }
+
+  for(let i = 0; i < ORB_COUNT; i++) {
+    createOrb(i);
+  }
+  requestAnimationFrame(animateOrbs);
+</script>
+
 
 </body>
 </html>
