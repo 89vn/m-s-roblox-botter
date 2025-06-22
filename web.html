@@ -29,7 +29,6 @@
       overflow-y: auto;
     }
 
-    /* Background orbs container */
     #backgroundOrbs {
       position: fixed;
       top: 0;
@@ -41,7 +40,6 @@
       overflow: hidden;
     }
 
-    /* Each small orb */
     .orb {
       position: absolute;
       border-radius: 50%;
@@ -54,7 +52,6 @@
       will-change: transform, opacity;
     }
 
-    /* Color variants for orbs */
     .orb.red {
       background: rgba(255, 107, 107, 0.3);
       box-shadow-color: rgba(255, 107, 107, 0.7);
@@ -69,7 +66,6 @@
       box-shadow: 0 0 6px 2px rgba(255, 105, 180, 0.7);
     }
 
-    /* Explosion animation */
     @keyframes explode {
       0% {
         transform: scale(1);
@@ -88,7 +84,7 @@
 
     .title-page {
       text-align: center;
-      margin-bottom: 4px; /* smaller gap */
+      margin-bottom: 4px;
       z-index: 10;
     }
 
@@ -98,12 +94,12 @@
       margin: 0;
     }
 
-    /* New description below title */
+
     .title-description {
       font-size: 12px;
       color: rgba(255, 255, 255, 0.3);
       max-width: 260px;
-      margin: 0 auto 20px auto; /* less bottom margin for tighter spacing */
+      margin: 0 auto 20px auto; 
       user-select: none;
       line-height: 1.4;
       z-index: 10;
@@ -134,14 +130,14 @@
       border-color: rgba(255, 255, 255, 0.6);
     }
 
-    /* Hide native number input arrows */
+
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
       -webkit-appearance: none; 
       margin: 0; 
     }
     input[type=number] {
-      -moz-appearance: textfield; /* Firefox */
+      -moz-appearance: textfield;
     }
 
     .dropdown {
@@ -170,7 +166,6 @@
       border-color: rgba(255, 255, 255, 0.4);
     }
 
-    /* Arrow icon */
     .dropdown-toggle::after {
       content: "";
       border: solid white;
@@ -183,7 +178,7 @@
       align-self: center;
     }
 
-    /* Rotate arrow when open */
+  
     .dropdown-toggle.open::after {
       transform: rotate(-135deg);
     }
@@ -218,7 +213,6 @@
       background-color: #383838;
     }
 
-    /* Captcha box */
     .captcha-box {
       width: 260px;
       background: #2a2a2a;
@@ -282,7 +276,7 @@
       z-index: 10;
     }
 
-    /* Custom alert container */
+
     #customAlert {
       position: fixed;
       top: 20px;
@@ -349,12 +343,11 @@
       MUST BE IN THE DISCORD SERVER, VISIT BOT FEATURE REQUIRES A SCRIPT TO BE ADDED TO YOUR GAME (this is completely safe)
     </p>
 
-    <!-- Discord Button -->
     <button onclick="window.open('https://discord.gg/9xxD9pUTTn', '_blank')">Join Discord</button>
 
   </div>
 
-  <!-- Custom alert box -->
+
   <div id="customAlert"></div>
 
 <script>
@@ -426,10 +419,9 @@
       return;
     }
 
-    // --- 24-hour cooldown check ---
     const lastSent = localStorage.getItem("lastWebhookSent");
     const now = Date.now();
-    const cooldown = 24 * 60 * 60 * 1000; // 24 hours in ms
+    const cooldown = 24 * 60 * 60 * 1000;
 
     if (lastSent && now - parseInt(lastSent) < cooldown) {
       const remaining = cooldown - (now - parseInt(lastSent));
@@ -442,7 +434,7 @@
       embeds: [
         {
           title: "New Request",
-          color: 0xFF6B6B, // Light red color
+          color: 0xFF6B6B,
           fields: [
             { name: "Link to group/game", value: username, inline: true },
             { name: "Request Type", value: selectedOption, inline: true },
@@ -474,9 +466,8 @@
     } catch {
       showAlert("Error sending message.");
     }
-  } // <-- END of sendToWebhook function
-
-  // Close dropdown if clicked outside
+  } 
+  
   window.addEventListener("click", function(e) {
     const dropdown = document.getElementById("customDropdown");
     if (!dropdown.contains(e.target)) {
@@ -485,7 +476,6 @@
     }
   });
 
-  // --- Orb background logic ---
 
   const ORB_COUNT = 80;
   const orbs = [];
@@ -498,23 +488,22 @@
     const orb = document.createElement("div");
     orb.classList.add("orb");
 
-    // Assign random color class
+
     const colors = ["red", "purple", "pink"];
     const chosenColor = colors[Math.floor(Math.random() * colors.length)];
     orb.classList.add(chosenColor);
 
-    // random size small 4 to 8px
     const size = randomRange(4, 8);
     orb.style.width = size + "px";
     orb.style.height = size + "px";
 
-    // random initial position inside viewport (in px)
+
     const left = randomRange(0, window.innerWidth - size);
     const top = randomRange(0, window.innerHeight - size);
     orb.style.left = left + "px";
     orb.style.top = top + "px";
 
-    // store data for drifting in x, y, and also z-like with translateZ simulated by scale
+
     orb._baseLeft = left;
     orb._baseTop = top;
     orb._driftXAmplitude = randomRange(10, 25);
