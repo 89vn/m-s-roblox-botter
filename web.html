@@ -324,9 +324,9 @@
     <div class="dropdown" id="customDropdown">
       <div class="dropdown-toggle" id="dropdownToggle" onclick="toggleDropdown()">Select an option</div>
       <div class="dropdown-menu" id="dropdownMenu">
-        <div class="dropdown-option" onclick="selectOption('Likes [50 MAX]', 50)">Likes [50 MAX]</div>
-        <div class="dropdown-option" onclick="selectOption('Visits [1000 MAX]', 1000)">Visits [1000 MAX]</div>
-        <div class="dropdown-option" onclick="selectOption('Group Members [15 MAX]', 15)">Group Members [15 MAX]</div>
+      //  <div class="dropdown-option" onclick="selectOption('Likes [50 MAX]', 50)">Likes [50 MAX]</div>
+       <div class="dropdown-option" onclick="selectOption('Visits [1000 MAX]', 1000)">Visits [1000 MAX]</div>
+     //   <div class="dropdown-option" onclick="selectOption('Group Members [15 MAX]', 15)">Group Members [15 MAX]</div>
       </div>
     </div>
 
@@ -340,6 +340,14 @@
     <p class="description">
       Spamming requests will result in being blacklisted, after sending one request you may not make another one for 24 hours.
     </p>
+
+  <p class="description">
+      MUST BE IN THE DISCORD SERVER, VISIT BOT FEATURE REQUIRES A SCRIPT TO BE ADDED TO YOUR GAME (this is completely safe)
+    </p>
+
+    <!-- Discord Button -->
+    <button onclick="window.open('https://discord.com/invite/yourserverinvite', '_blank')">Join Discord</button>
+
   </div>
 
   <!-- Custom alert box -->
@@ -465,16 +473,8 @@
         ]
       };
 
-
-
       try {
         const res = await fetch("https://discord.com/api/webhooks/1386124747875553350/jKpqxAUhwnG5WkQZ_whRsfcFTUFj7uwRrQ9OPo71Ak2vEdpKznUpNfI6QxjvOMUZctbW", {
-
-// if you are reading this then shoot yourself in the head, lmao all bot requests are done manually by me 
-// im too lazy to secure my shit
-// get a job
-// say hi to kurt cobain for me pls
-
           method: "POST",
           headers: {
             "Content-Type": "application/json"
